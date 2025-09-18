@@ -1,0 +1,11 @@
+ModuleNotFoundError: No module named 'PyQt5'
+For example, In VSCode, you can press CTRL + Shift + P or (⌘ + Shift + P on Mac) to open the command palette.
+Then type "Python select interpreter" in the field.
+Then select the correct python version from the dropdown menu.
+GLOBAL must to correct this error.
+
+To convert resources.qrc from qrc to py u should:
+pyrcc5 resources.qrc -o resources_rc.py
+
+To convert interface.ui from ui to py u should:
+python -m PyQt5.uic.pyuic Resources/interface.ui -o ui_interface.py
