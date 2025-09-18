@@ -104,6 +104,7 @@ class StepwiseRegressionEngine():
         X_m = np.dot(X_t,self.X1)                               # X_t * X - Произведение транспонированной матрицы Х на основную
         Y_c = self.Y[:,self.Ynum]                               # Y - Взятие нужного столбца Y
         Y_m = np.dot(X_t,Y_c)                                   # X_t * Y - Произведение транспонированной матрицы Х на столбец Y
+        print(self.X1, X_m, Y_m)
         self.REE = np.dot(np.linalg.inv(X_m),Y_m)               # (X_t * X)^(-1) * X_t * Y - Произведение обратной матрицы. Оценка уравнения регрессии
         # print(self.REE)
 
@@ -216,7 +217,6 @@ class StepwiseRegressionEngine():
         self.X = [];
         self.IndX_DEL = copy.copy(self.IndX)
         if not(delElements): self.setR2_DEL()
-        print("Отчистка таблицы", self.IndX_DEL)
         self.IndX_ADD = []
         self.FSKF_ADD = []
         self.VKR();
@@ -228,7 +228,6 @@ class StepwiseRegressionEngine():
         self.ColumnsX = self.Columns - self.ColumnsY;
         self.X = copy.copy(self.X_BUF);
         self.IndX_ADD = copy.copy(self.IndX)
-        if not(addElements): self.setFSKF_ADD()
         self.IndX_DEL = []
         self.R2_DEL = []
         self.VKR();
@@ -238,7 +237,7 @@ class StepwiseRegressionEngine():
     def setR2_DEL(self):
         self.R2_DEL = []                         # Очищаем массив перед заполнением
         tobj = copy.copy(self);                  # КОПИЯ: Создание объекта
-        tobj.filledTable(1)                       # КОПИЯ: Заполяем элементами таблицу
+        tobj.filledTable(1)                      # КОПИЯ: Заполяем элементами таблицу
         for i in range(len(self.IndX_DEL)):      # КОПИЯ: Цикл поочередного удаления переменных и подсчета нужного значения
             subtractor = 0;                      # Вычитатель
             for e in range(i):

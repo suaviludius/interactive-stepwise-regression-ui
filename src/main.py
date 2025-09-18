@@ -228,18 +228,20 @@ class MainWindow(QMainWindow):
     # Включения фактора по выбору пользователя
     def userStepwiseStep(self):
         i = self.tableDatabaseSelectionItem()
-        self.MR.ADDXE(self.MR.IndX_DEL.index(i))
-        self.setEditTextBox()
-        self.changeBackgrounColor([self.MR.IndX_ADD[-1]],'#bcf5d3','#3e4556')
-        self.statusBar.showMessage(f'Был добавлен элемент: {self.MR.IndX_ADD[-1] + 1}')
+        if i in self.MR.IndX_DEL:
+            self.MR.ADDXE(self.MR.IndX_DEL.index(i))
+            self.setEditTextBox()
+            self.changeBackgrounColor([self.MR.IndX_ADD[-1]],'#bcf5d3','#3e4556')
+            self.statusBar.showMessage(f'Был добавлен элемент: {self.MR.IndX_ADD[-1] + 1}')
 
     # Исключение фактора по выбору пользователя
     def userBackwardStep(self):
         i = self.tableDatabaseSelectionItem()
-        self.MR.DELXE(self.MR.IndX_ADD.index(i))
-        self.setEditTextBox()
-        self.changeBackgrounColor([self.MR.IndX_DEL[-1]],'#ffc5c5','#3e4556')
-        self.statusBar.showMessage(f'Был удален элемент: {self.MR.IndX_DEL[-1] + 1}')
+        if i in self.MR.IndX_ADD:
+            self.MR.DELXE(self.MR.IndX_ADD.index(i))
+            self.setEditTextBox()
+            self.changeBackgrounColor([self.MR.IndX_DEL[-1]],'#ffc5c5','#3e4556')
+            self.statusBar.showMessage(f'Был удален элемент: {self.MR.IndX_DEL[-1] + 1}')
 
 
     ##############################################
