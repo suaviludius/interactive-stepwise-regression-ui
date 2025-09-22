@@ -101,12 +101,10 @@ class StepwiseRegressionEngine():
         if len(self.X) == 0: return;
         self.X1 = np.column_stack((np.ones((self.Lines, 1)),self.X))  # Х - Добавление столбца c 1 к Х
         X_t = self.X1.T                                         # X_t - Транспонированная матрица Х
-        X_m = np.dot(X_t,self.X1)                               # X_t * X - Произведение транспонированной матрицы Х на основную
+        X_m = X_t @ self.X1                                     # X_t * X - Произведение транспонированной матрицы Х на основную
         Y_c = self.Y[:,self.Ynum]                               # Y - Взятие нужного столбца Y
         Y_m = np.dot(X_t,Y_c)                                   # X_t * Y - Произведение транспонированной матрицы Х на столбец Y
-        print(self.X1, X_m, Y_m)
         self.REE = np.dot(np.linalg.inv(X_m),Y_m)               # (X_t * X)^(-1) * X_t * Y - Произведение обратной матрицы. Оценка уравнения регрессии
-        # print(self.REE)
 
     # -- Анализ параметров уравнения регрессии -------------
     def APUR(self):
@@ -124,7 +122,7 @@ class StepwiseRegressionEngine():
         self.Y_Se2 = np.dot(np.transpose(self.E),self.E)                # ОД:  Y_Se2 = (Y_REE - Y)`*(Y_REE - Y)
         self.Y_S2 = self.Y_Se2/(self.Lines-self.ColumnsX)               # НОД: Y_S2 = Y_Se2/(m - n)
         self.Y_S =  np.sqrt(self.Y_S2)                                  # ОСО: Y_S = sqrt(Y_Se2)
-        # % obj.K = obj.Y_S2*inv(obj.X1'*obj.X1);                       % Элементы главной диагонали - дисперсии элементов
+        self.PAC = (self.REE * np.mean(self.X1, axis=0)) * self.Y_mean  # Частные коэффиценты эластинчости
         # -- Коэффициенты ----------------------------------
         self.R = np.sqrt(1-self.Y_Se2/self.Y_RMS_sum)                   # КК
         self.R2 = self.R**2                                             # КД
