@@ -47,6 +47,7 @@ class StepwiseRegressionEngine():
     #     Y_Se2                       % Оценка дисперсии
     #     Y_S2                        % Несмещенная оценка дисперсии
     #     Y_S                         % Оценка среднеквадратичного отклонения (стандартная ошибка оценки Y)
+    #     PAC                         % Частные коэффиценты эластинчости
     #     K                           % Оценка ковариационной матрицы
     #     R                           % Коэфициент корреляции
     #     R2                          % Коэфициент детерминации
@@ -101,7 +102,7 @@ class StepwiseRegressionEngine():
         if len(self.X) == 0: return;
         self.X1 = np.column_stack((np.ones((self.Lines, 1)),self.X))  # Х - Добавление столбца c 1 к Х
         X_t = self.X1.T                                         # X_t - Транспонированная матрица Х
-        X_m = X_t @ self.X1                                     # X_t * X - Произведение транспонированной матрицы Х на основную
+        X_m = np.dot(X_t,self.X1)                               # X_t * X - Произведение транспонированной матрицы Х на основную
         Y_c = self.Y[:,self.Ynum]                               # Y - Взятие нужного столбца Y
         Y_m = np.dot(X_t,Y_c)                                   # X_t * Y - Произведение транспонированной матрицы Х на столбец Y
         self.REE = np.dot(np.linalg.inv(X_m),Y_m)               # (X_t * X)^(-1) * X_t * Y - Произведение обратной матрицы. Оценка уравнения регрессии
@@ -122,18 +123,12 @@ class StepwiseRegressionEngine():
         self.Y_Se2 = np.dot(np.transpose(self.E),self.E)                # ОД:  Y_Se2 = (Y_REE - Y)`*(Y_REE - Y)
         self.Y_S2 = self.Y_Se2/(self.Lines-self.ColumnsX)               # НОД: Y_S2 = Y_Se2/(m - n)
         self.Y_S =  np.sqrt(self.Y_S2)                                  # ОСО: Y_S = sqrt(Y_Se2)
-        self.PAC = (self.REE * np.mean(self.X1, axis=0)) * self.Y_mean  # Частные коэффиценты эластинчости
+        self.PAC = self.REE[1:] * np.mean(self.X, axis=0)/self.Y_mean   # Частные коэффиценты эластинчости
         # -- Коэффициенты ----------------------------------
         self.R = np.sqrt(1-self.Y_Se2/self.Y_RMS_sum)                   # КК
         self.R2 = self.R**2                                             # КД
         if self.ColumnsX <= 1: self.FSKF = self.R2*(self.Lines-self.ColumnsX)/((1-self.R2)) #КС
-        else: self.FSKF = self.R2*(self.Lines-self.ColumnsX)/((self.ColumnsX-1)*(1-self.R2))
-
-        # print("-------")
-        # print(self.R)
-        # print(self.R2)
-        # print(self.FSKF)
-
+        else: self.FSKF = self.R2/(1-self.R2)*(self.Lines-self.ColumnsX-1)/(self.ColumnsX)
 
     # -- Удаление независимого фактора ---------------------
     def DELX(self,i):
