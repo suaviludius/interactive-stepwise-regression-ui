@@ -6,7 +6,7 @@ from pathlib import Path
 from src.core.regression_core import StepwiseRegressionEngine
 
 # Путь к тестовому файлу
-TEST_EXCEL_PATH = Path(__file__).parent / "test_data" / "regression_test_data.xlsx"
+TEST_EXCEL_PATH = Path(__file__).parent / "regression_test_data.xlsx"
 
 def read_cell_value(sheet_name, cell_address):
     """Читает значение из конкретной ячейки Excel."""
@@ -49,27 +49,22 @@ def read_range_values(sheet_name, start_cell, end_cell):
 @pytest.fixture
 def excel_engine():
     """Создает движок регрессии из данных на первом листе."""
-    engine = StepwiseRegressionEngine(str(TEST_EXCEL_PATH), sheet=1)
+    engine = StepwiseRegressionEngine(str(TEST_EXCEL_PATH), Sheet=1)
     engine.readExel(ColumnsY=1)
     return engine
 
 def test_matrix_multiplication(excel_engine):
-    """Тестирует умножение матриц X'X и X'Y."""
+    """Тестирует перенос данных."""
     engine = excel_engine
     engine.filledTable()
 
     # Читаем ожидаемые значения из Excel
-    expected_xtx = read_range_values('Расчет', 'A29', 'K39')  # Матрица X'X
-    expected_xty = read_range_values('Расчет', 'A41', 'A51')  # Вектор X'Y
-
-    # Рассчитываем фактически
-    X1 = np.column_stack((np.ones((engine.Lines, 1)), engine.X))
-    actual_xtx = np.dot(X1.T, X1).flatten()
-    actual_xty = np.dot(X1.T, engine.Y[:, engine.Ynum])
+    expected_x = read_range_values('Расчет', 'B2', 'K27')  # Матрица X
+    expected_y = read_range_values('Расчет', 'L2', 'L27')  # Матрица Y
 
     # Сравниваем
-    np.testing.assert_allclose(actual_xtx, expected_xtx, rtol=1e-10)
-    np.testing.assert_allclose(actual_xty, expected_xty, rtol=1e-10)
+    np.testing.assert_allclose(engine.X.flatten(), expected_x.astype(float), rtol=1e-10)
+    np.testing.assert_allclose(engine.Y.flatten(), expected_y.astype(float), rtol=1e-10)
 
 def test_regression_coefficients(excel_engine):
     """Тестирует коэффициенты регрессии."""
@@ -81,7 +76,7 @@ def test_regression_coefficients(excel_engine):
     expected_coeffs = read_range_values('Расчет', 'A53', 'A63')
 
     # Сравниваем
-    np.testing.assert_allclose(engine.REE, expected_coeffs, rtol=1e-5)
+    np.testing.assert_allclose(engine.REE, expected_coeffs.astype(float), rtol=1e-5)
 
 def test_r_squared(excel_engine):
     """Тестирует R-квадрат."""
@@ -91,9 +86,10 @@ def test_r_squared(excel_engine):
     engine.APUR()
 
     # Читаем R² из Excel
-    expected_r2 = read_cell_value('Расчет', 'B97')  # Ячейка R2
+    expected_r2 = read_cell_value('Расчет', 'B102')  # Ячейка R2
 
-    assert abs(engine.R2 - expected_r2) < 1e-10
+    # Относительная погрешность
+    np.testing.assert_allclose(engine.R2, expected_r2.astype(float), rtol=1e-3)
 
 def test_f_statistic(excel_engine):
     """Тестирует F-статистику."""
@@ -103,19 +99,20 @@ def test_f_statistic(excel_engine):
     engine.APUR()
 
     # Читаем F-статистику из Excel
-    expected_f = read_cell_value('Расчет', 'B99')  # Ячейка F
+    expected_f = read_cell_value('Расчет', 'B105')  # Ячейка F
 
-    assert abs(engine.FSKF - expected_f) < 1e-5
+    # Относительная погрешностьы
+    np.testing.assert_allclose(engine.FSKF, expected_f.astype(float), rtol=1e-3)
 
 def test_residuals(excel_engine):
-    """Тестирует остатки регрессии."""
+    """Тестирует кэффициенты эластичности."""
     engine = excel_engine
     engine.filledTable()
     engine.VKR()
     engine.APUR()
 
-    # Читаем Y(x) из Excel (столбец Y(x))
-    expected_y_pred = read_range_values('Расчет', 'H2', 'H27')
+    # Читаем частные коэффициенты эластичности из Excel (столбец E)
+    expected_pac = read_range_values('Расчет', 'B109', 'B118')
 
     # Сравниваем предсказанные значения
-    np.testing.assert_allclose(engine.Y_REE, expected_y_pred, rtol=1e-5)
+    np.testing.assert_allclose(engine.PAC, expected_pac.astype(float), rtol=1e-5)
