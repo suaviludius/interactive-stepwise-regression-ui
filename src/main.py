@@ -3,6 +3,7 @@
 
 import sys
 import os # Модуль для работы с файловой системой (функции операционной системы)
+from datetime import datetime
 
 # -- GUI -----------------------------------------------------------
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -94,6 +95,7 @@ class MainWindow(QMainWindow):
         self.ui.actionExplorerMB.triggered.connect(lambda:self.ui.dockExplorer.setVisible(self.ui.actionExplorerMB.isChecked()))
         self.ui.actionAnalyseMB.triggered.connect(lambda: self.ui.dockAnalyse.setVisible(self.ui.actionAnalyseMB.isChecked()))
         self.ui.actionGraphicsMB.triggered.connect(lambda: self.ui.dockGraphics.setVisible(self.ui.actionGraphicsMB.isChecked()))
+
 
     #############################################
     # [ Обработка кнопок dockWidget - Analyse ] #
@@ -233,6 +235,7 @@ class MainWindow(QMainWindow):
             self.setEditTextBox()
             self.changeBackgrounColor([self.MR.IndX_ADD[-1]],'#bcf5d3','#3e4556')
             self.statusBar.showMessage(f'Был добавлен элемент: {self.MR.IndX_ADD[-1] + 1}')
+            self.tableDatabaseSelectionItem()
 
     # Исключение фактора по выбору пользователя
     def userBackwardStep(self):
@@ -242,7 +245,7 @@ class MainWindow(QMainWindow):
             self.setEditTextBox()
             self.changeBackgrounColor([self.MR.IndX_DEL[-1]],'#ffc5c5','#3e4556')
             self.statusBar.showMessage(f'Был удален элемент: {self.MR.IndX_DEL[-1] + 1}')
-
+            self.tableDatabaseSelectionItem()
 
     ##############################################
     # [ Обработка кнопок dockWidget - Graphics ] #
@@ -279,9 +282,10 @@ class MainWindow(QMainWindow):
     def graphicsDraw(self):
         # -- Graphics paint --
         self.ui.figure.clear()
+        
         if(self.ui.buttonGrSKD.isChecked()):
             plt.bar(range(len(self.MR.IndX_DEL)), self.MR.R2_DEL, color ='#3c90a4', width = 0.2, edgecolor='#E6E6E6')
-        elif(self.ui.buttonGrSKS.isChecked()):
+        elif(self.ui.buttonGrSKS.isChecked() and len(self.MR.IndX_ADD) > 0):
             plt.bar(range(len(self.MR.IndX_ADD)), self.MR.FSKF_ADD, color ='#3c90a4', width = 0.2, edgecolor='#E6E6E6')
         elif(self.ui.buttonGrE.isChecked()):
             yneg = []
@@ -342,50 +346,87 @@ class MainWindow(QMainWindow):
         for i in self.MR.IndX_DEL: X_DEL.append(self.MR.dataset.columns[i])
         for i in self.MR.IndX_ADD: X_ADD.append(self.MR.dataset.columns[i])
 
-        file_name, _ = QFileDialog.getSaveFileName(self, 'Save File', '', '(*.rep)')
+        file_name, _ = QFileDialog.getSaveFileName(self, 'Сохранить отчет', '', '(*.rep)')
 
         if file_name:
             try:
-                with open(file_name, 'w') as f:
+                self.saveReport(file_name, X_DEL, X_ADD)
 
-                    f.write('# Переменные не вошедшие в итоговую таблицу:\n')
-                    for i, item in enumerate(X_DEL):
-                        f.write(f'{item}, ')
-                    f.write(f'\n\n# Количество удаленных переменных:\n{len(X_DEL)}')
-                    f.write('\n\n# Переменные вошедшие в итоговую таблицу:\n')
-                    for i, item in enumerate(X_ADD):
-                        f.write(f'{item}, ')
-                    f.write(f'\n\n# Количество добавленных переменных:\n{len(X_ADD)}')
-                    f.write('\n\n# Итоговые коэффициенты уравнения оценки регрессии:\n')
-                    for i, item in enumerate(self.MR.REE):
-                        f.write(f'{item}, ')
-                    f.write('\n\n# Итоговые ошибки уравнения оценки регрессии:\n')
-                    for i, item in enumerate(self.MR.E):
-                        f.write(f'{item}, ')
-                    f.write('\n\n# Значения коэффициентов детерминации в ходе анализа:\n')
-                    for i, item in enumerate(self.MR.R2_DEL):
-                        f.write(f'{item}, ')
-                    f.write('\n\n# Значения коэффициентов статитсики в ходе анализа:\n')
-                    for i, item in enumerate(self.MR.FSKF_ADD):
-                        f.write(f'{item}, ')
-
-                self.statusBar.showMessage("Данные удачно сохранены")
+                self.statusBar.showMessage("Отчет успешно сохранен")
                 self.openReport(file_name)
 
-            except IOError:
-                self.statusBar.showMessage("Ошибка в процессе сохранения данных")
+            except Exception as e:
+                self.statusBar.showMessage(f"Ошибка при сохранении: {str(e)}")
+
+    def saveReport(self, file_name, X_DEL, X_ADD):
+        """Сохранение отчета в текстовом формате с красивым форматированием"""
+        with open(file_name, 'w', encoding='utf-8') as f:
+            f.write("ОТЧЕТ ПО РЕГРЕССИОННОМУ АНАЛИЗУ\n")
+            f.write("=" * 50 + "\n")
+            f.write(f"Дата: {datetime.now().strftime('%d.%m.%Y %H:%M:%S')}\n\n")
+
+            f.write("ОБЩАЯ СТАТИСТИКА:\n")
+            f.write("-" * 25 + "\n")
+            f.write(f"Включенные переменные: {len(X_ADD)}\n")
+            f.write(f"Исключенные переменные: {len(X_DEL)}\n")
+            f.write(f"Коэффициент R²: {self.MR.R2:.6f}\n")
+            f.write(f"F-статистика: {self.MR.FSKF:.6f}\n\n")
+
+            f.write("ВКЛЮЧЕННЫЕ ПЕРЕМЕННЫЕ:\n")
+            f.write("-" * 25 + "\n")
+            for i, var in enumerate(X_ADD, 1):
+                f.write(f"{i}. {var}\n")
+            if not X_ADD:
+                f.write("Нет включенных переменных\n")
+            f.write("\n")
+
+            f.write("ИСКЛЮЧЕННЫЕ ПЕРЕМЕННЫЕ:\n")
+            f.write("-" * 25 + "\n")
+            for i, var in enumerate(X_DEL, 1):
+                f.write(f"{i}. {var}\n")
+            if not X_DEL:
+                f.write("Нет исключенных переменных\n")
+            f.write("\n")
+
+            f.write("КОЭФФИЦИЕНТЫ РЕГРЕССИИ:\n")
+            f.write("-" * 25 + "\n")
+            for i, coef in enumerate(self.MR.REE):
+                if i == 0:
+                    f.write(f"Коэффициент {i}: {coef:.6f} - Свободный член (константа)\n")
+                else:
+                    var_index = i - 1  # потому что 0 - константа
+                    if var_index < len(X_ADD):
+                        var_name = X_ADD[var_index]
+                        f.write(f"Коэффициент {i}: {coef:.6f} - Переменная {var_name}\n")
+                    else:
+                        f.write(f"Коэффициент {i}: {coef:.6f} - Переменная X{var_index}\n")
+            f.write("\n")
+
+            # Анализ значимости коэффициентов эластичности
+            if hasattr(self.MR, 'PAC') and self.MR.PAC is not None:
+                f.write("АНАЛИЗ ВЛИЯНИЯ ПЕРЕМЕННЫХ:\n")
+                f.write("-" * 35 + "\n")
+                sorted_pac = sorted(zip(X_ADD, self.MR.PAC), key=lambda x: abs(x[1]), reverse=True)
+
+                f.write("Ранжирование по влиянию на результат:\n")
+                for i, (var_name, pac) in enumerate(sorted_pac, 1):
+                    influence = "Высокое" if abs(pac) > 0.3 else "Среднее" if abs(pac) > 0.1 else "Низкое"
+                    f.write(f"{i}. {var_name}: {pac*100:6.2f}% ({influence} влияние)\n")
+                f.write("\n")
 
     def openReport(self, file_name):
         if file_name:
             try:
-                with open(file_name, 'r') as f:
-                    content = f.read()
+                with open(file_name, 'r', encoding='utf-8') as f:
+                                content = f.read()
 
-                self.ui.reportText.append(f'Чтение данных из файла: {file_name}\n')
+                self.ui.reportText.clear()
+                # self.ui.reportText.append(f'Чтение данных из файла: {file_name}\n')
+                self.ui.reportText.setFont(QFont('Consolas', 10))
                 self.ui.reportText.append(content)
 
-            except IOError:
-                self.statusBar.showMessage("Ошибка в процессе открытия файла")
+            except Exception as e:
+                self.statusBar.showMessage(f"Ошибка открытия файла: {str(e)}")
 
     ##############################################
     # [ Работа объекта регрессии analyseWindow ] #
@@ -482,12 +523,13 @@ if __name__ == '__main__':
     from PyQt5.QtWidgets import QApplication
     app = QApplication(sys.argv)
     app.setStyleSheet(StyleSheetApp)
-    # w = MainWindow()
-    # w.show()
-    w = FramelessWindow()
-    w.setWindowTitle(' Множественная регрессия [by Artem Shishov]')
-    w.setIconSize(40)
+    w = MainWindow()
     w.setWindowIcon(QIcon(r'src\ui\resources\Logo\SHV_icon.svg'))
-    w.setWidget(MainWindow(w))          # Добавить свое окно
     w.show()
+    # w = FramelessWindow()
+    # w.setWindowTitle(' Множественная регрессия [by Artem Shishov]')
+    # w.setIconSize(40)
+    # w.setWindowIcon(QIcon(r'src\ui\resources\Logo\SHV_icon.svg'))
+    # w.setWidget(MainWindow(w))          # Добавить свое окно
+    # w.show()
     sys.exit(app.exec_())
