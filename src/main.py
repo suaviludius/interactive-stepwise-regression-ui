@@ -92,10 +92,138 @@ class MainWindow(QMainWindow):
         self.ui.actionReportTB.triggered.connect(lambda: self.ui.mainCenterBodyStacked.setCurrentWidget(self.ui.pageReport))
 
         # Обработка нажатия кнопок для верхнего menuBar
+        self.ui.actionOpenFileMB.triggered.connect(lambda: self.selectFile())
+        self.ui.actionOpenFolderMB.triggered.connect(lambda: self.selectFolder())
         self.ui.actionExplorerMB.triggered.connect(lambda:self.ui.dockExplorer.setVisible(self.ui.actionExplorerMB.isChecked()))
         self.ui.actionAnalyseMB.triggered.connect(lambda: self.ui.dockAnalyse.setVisible(self.ui.actionAnalyseMB.isChecked()))
         self.ui.actionGraphicsMB.triggered.connect(lambda: self.ui.dockGraphics.setVisible(self.ui.actionGraphicsMB.isChecked()))
+        self.ui.actionInstructionMB.triggered.connect(self.showInstruction)
 
+    def showInstruction(self):
+        """Показывает инструкцию по использованию приложения."""
+        instruction_text = """
+    <h1>Инструкция по использованию приложения</h1>
+    <h2>Анализ множественной линейной регрессии</h2>
+
+    <h3>📁 1. Загрузка данных</h3>
+    <p><b>Шаг 1:</b> Нажмите кнопку "Выбрать файл" или "Выбрать папку" на главной странице</p>
+    <p><b>Шаг 2:</b> Выберите файл данных в формате .xlsx</p>
+    <p><b>Требования к данным:</b></p>
+    <ul>
+        <li>Независимые переменные (X) должны располагаться в первых столбцах</li>
+        <li>Зависимые переменные (Y) - в последних столбцах</li>
+        <li>Первая строка должна содержать названия переменных</li>
+    </ul>
+
+    <h3>⚙️ 2. Настройка анализа</h3>
+    <p><b>Шаг 3:</b> Перейдите в раздел "Анализ" (кнопка с графиком в левой панели)</p>
+    <p><b>Шаг 4:</b> В доке "Анализ" выполните:</p>
+    <ul>
+        <li>Выберите количество зависимых переменных</li>
+        <li>Выберите конкретную зависимую переменную для анализа</li>
+        <li>Настройте параметры алгоритма при необходимости</li>
+    </ul>
+
+    <h3>🔍 3. Выполнение пошагового анализа</h3>
+    <p><b>Методы анализа:</b></p>
+    <ul>
+        <li><b>Обратное исключение</b> - начинается с полной модели, последовательно удаляет наименее значимые переменные</li>
+        <li><b>Прямое включение</b> - начинается с пустой модели, последовательно добавляет наиболее значимые переменные</li>
+    </ul>
+
+    <p><b>Управление процессом:</b></p>
+    <ul>
+        <li>Кнопка <b>"Вперед"</b> - выполнить следующий шаг алгоритма</li>
+        <li>Кнопка <b>"Назад"</b> - отменить последний шаг</li>
+        <li>Кнопка <b>"Заполнить"</b> - включить все переменные в модель</li>
+        <li>Кнопка <b>"Очистить"</b> - удалить все переменные из модели</li>
+    </ul>
+
+    <h3>📊 4. Анализ результатов</h3>
+    <p><b>В реальном времени отслеживайте:</b></p>
+    <ul>
+        <li>Коэффициент детерминации (R²)</li>
+        <li>F-статистику</li>
+        <li>Стандартную ошибку оценки</li>
+        <li>Графики изменения метрик</li>
+    </ul>
+
+    <h3>💾 5. Сохранение результатов</h3>
+    <p><b>Шаг 5:</b> Перейдите в раздел "Отчет"</p>
+    <p><b>Шаг 6:</b> Нажмите "Создать отчет" для сохранения результатов в файл .rep</p>
+
+    <h3>🎯 Советы по использованию</h3>
+    <ul>
+        <li>Используйте автоматический режим для быстрого анализа</li>
+        <li>Ручной режим позволяет контролировать каждый шаг</li>
+        <li>Следите за изменением R² - он не должен значительно уменьшаться</li>
+        <li>Анализируйте графики для визуальной оценки процесса</li>
+    </ul>
+
+    <h3>❌ Возможные проблемы и решения</h3>
+    <ul>
+        <li><b>Файл не загружается</b> - проверьте формат и структуру данных</li>
+        <li><b>Алгоритм не работает</b> - убедитесь, что выбрана зависимая переменная</li>
+        <li><b>Некорректные результаты</b> - проверьте мультиколлинеарность переменных</li>
+    </ul>
+
+    <p style="color: #3c90a4; font-weight: bold;">📞 Для дополнительной помощи: powerranger1912@gmail.com</p>
+    """
+
+        # Создаем диалоговое окно с инструкцией
+        dialog = QDialog(self)
+        dialog.setWindowTitle("Инструкция по использованию приложения")
+        dialog.setMinimumSize(800, 600)
+        dialog.setStyleSheet("""
+            QDialog {
+                background-color: #2b2b2b;
+                color: #ffffff;
+            }
+            QScrollArea {
+                border: none;
+            }
+        """)
+
+        # Создаем текстовое поле с поддержкой HTML
+        text_edit = QTextEdit()
+        text_edit.setReadOnly(True)
+        text_edit.setHtml(instruction_text)
+        text_edit.setStyleSheet("""
+            QTextEdit {
+                background-color: #2b2b2b;
+                color: #ffffff;
+                border: none;
+                font-family: Arial, sans-serif;
+                font-size: 12px;
+                padding: 10px;
+            }
+        """)
+
+        # Кнопка закрытия
+        close_button = QPushButton("Закрыть")
+        close_button.clicked.connect(dialog.accept)
+        close_button.setStyleSheet("""
+            QPushButton {
+                background-color: #3c90a4;
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            QPushButton:hover {
+                background-color: #255a66;
+            }
+        """)
+
+        # Компоновка
+        layout = QVBoxLayout()
+        layout.addWidget(text_edit)
+        layout.addWidget(close_button, alignment=Qt.AlignCenter)
+        dialog.setLayout(layout)
+
+        # Показываем диалог
+        dialog.exec_()
 
     #############################################
     # [ Обработка кнопок dockWidget - Analyse ] #
@@ -282,12 +410,11 @@ class MainWindow(QMainWindow):
     def graphicsDraw(self):
         # -- Graphics paint --
         self.ui.figure.clear()
-        
-        if(self.ui.buttonGrSKD.isChecked()):
+        if(self.ui.buttonGrSKD.isChecked() and len(self.MR.R2_DEL) > 0):
             plt.bar(range(len(self.MR.IndX_DEL)), self.MR.R2_DEL, color ='#3c90a4', width = 0.2, edgecolor='#E6E6E6')
-        elif(self.ui.buttonGrSKS.isChecked() and len(self.MR.IndX_ADD) > 0):
+        elif(self.ui.buttonGrSKS.isChecked() and len(self.MR.FSKF_ADD) > 0):
             plt.bar(range(len(self.MR.IndX_ADD)), self.MR.FSKF_ADD, color ='#3c90a4', width = 0.2, edgecolor='#E6E6E6')
-        elif(self.ui.buttonGrE.isChecked()):
+        elif(self.ui.buttonGrE.isChecked() and len(self.MR.E) > 0):
             yneg = []
             ypos = []
             for e in self.MR.E:
@@ -330,6 +457,7 @@ class MainWindow(QMainWindow):
         self.setFT(pathFolder) # Инициализация файлового дерева
         self.statusBar.showMessage("Выбрана папка: {}".format(pathFolder)) # Сообщение в statusBar
         self.ui.buttonSelectFolder.setVisible(False)
+        self.ui.dockExplorer.setVisible(1)
 
     ###################################
     # [ Обработка кнопок reportWindow ] #
