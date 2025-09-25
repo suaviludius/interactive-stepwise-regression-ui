@@ -53,26 +53,56 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "/* Menu Inside  */\n"
-"QMenu{\n"
-"    background-color: #505A6E;\n"
-"    border: 1px solid #1f232a;\n"
-"    border-radius: 5px;\n"
-"    padding: 5px;\n"
-"    color: white;\n"
-"}\n"
-"/* Стиль для пунктов меню */\n"
-"QMenu::item {\n"
-"    background-color: transparent;\n"
-"    padding: 8px 20px 8px 10px;\n"
-"    border-radius: 3px;\n"
-"    margin: 2px;\n"
-"}\n"
-" /* Состояние наведения */\n"
-"QMenu::item:selected {\n"
-"    background-color: #3c90a4;\n"
-"    color: white;\n"
+"QMenu {\n"
+"    background-color: #2c313c;\n"
+"    border: 0px solid #3c90a4;  /* Добавим тонкую границу для четкости */\n"
+"    border-radius: 8px;\n"
+"    padding: 4px;  /* Уменьшим общий padding */\n"
+"    color: #dedede;\n"
+"    font-size: 13px;  /* Чуть уменьшим размер шрифта */\n"
+"    font-family: \"Segoe UI\", Arial, sans-serif;\n"
 "}\n"
 "\n"
+"QMenu::item {\n"
+"    background-color: transparent;\n"
+"    padding: 8px 20px 8px 20px;\n"
+"    border-radius: 4px;\n"
+"    margin: 1px;  /* Минимальный отступ между пунктами */\n"
+"    border: none;\n"
+"    min-height: 20px;  /* Фиксированная высота пунктов */\n"
+"    min-width: 120px;  /* Минимальная ширина меню */\n"
+"}\n"
+"\n"
+"QMenu::item:selected {\n"
+"    background-color: #505A6E;\n"
+"    margin: 1px;  /* Убираем увеличение margin при выборе */\n"
+"    color: white;\n"
+"    border: none;\n"
+"}\n"
+"\n"
+"QMenu::separator {\n"
+"    height: 1px;\n"
+"    background-color: #dedede;  /* Более заметный цвет */\n"
+"    margin: 4px 8px;  /* Отступы сверху/снизу и по бокам */\n"
+"    border: none;\n"
+"}\n"
+"\n"
+"QMenu::indicator {\n"
+"    width: 10px;           /* Увеличиваем ширину */\n"
+"    height: 10px;          /* Увеличиваем высоту */\n"
+"    margin-left: 0px;      /* Отступ слева */\n"
+"    margin-right: 0px;     /* Отступ справа от галочки */\n"
+"    padding: 0px;          /* Внутренний отступ */\n"
+"}\n"
+"QMenu::indicator:unchecked {\n"
+"    image: none;\n"
+"}\n"
+"/* Отмеченное состояние */\n"
+"QMenu::indicator:checked {\n"
+"    image: url(:/icons white/icons_white/check.svg);\n"
+"    background-color: transparent;\n"
+"    border: none;\n"
+"}\n"
 "\n"
 "/* Tool Widget */\n"
 "QToolBar{\n"
@@ -529,6 +559,11 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
         self.dockExplorer = QtWidgets.QDockWidget(MainWindow)
         self.dockExplorer.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dockExplorer.sizePolicy().hasHeightForWidth())
+        self.dockExplorer.setSizePolicy(sizePolicy)
         self.dockExplorer.setFloating(False)
         self.dockExplorer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetMovable)
         self.dockExplorer.setObjectName("dockExplorer")
@@ -568,7 +603,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockAnalyse.sizePolicy().hasHeightForWidth())
         self.dockAnalyse.setSizePolicy(sizePolicy)
-        self.dockAnalyse.setMinimumSize(QtCore.QSize(259, 601))
+        self.dockAnalyse.setMinimumSize(QtCore.QSize(275, 623))
         font = QtGui.QFont()
         font.setPointSize(-1)
         self.dockAnalyse.setFont(font)
@@ -1147,7 +1182,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockGraphics.sizePolicy().hasHeightForWidth())
         self.dockGraphics.setSizePolicy(sizePolicy)
-        self.dockGraphics.setMinimumSize(QtCore.QSize(250, 95))
+        self.dockGraphics.setMinimumSize(QtCore.QSize(250, 150))
         self.dockGraphics.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.dockGraphics.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetMovable)
         self.dockGraphics.setObjectName("dockGraphics")
@@ -1334,7 +1369,8 @@ class Ui_MainWindow(object):
         font.setPointSize(10)
         self.actionHelpMB.setFont(font)
         self.actionHelpMB.setObjectName("actionHelpMB")
-        self.menuProject.addAction(self.actionNewProjectMB)
+        self.actionInstructionMB = QtWidgets.QAction(MainWindow)
+        self.actionInstructionMB.setObjectName("actionInstructionMB")
         self.menuProject.addAction(self.actionOpenFolderMB)
         self.menuProject.addAction(self.actionOpenFileMB)
         self.menuProject.addSeparator()
@@ -1342,6 +1378,7 @@ class Ui_MainWindow(object):
         self.menuWindow.addAction(self.actionExplorerMB)
         self.menuWindow.addAction(self.actionAnalyseMB)
         self.menuWindow.addAction(self.actionGraphicsMB)
+        self.menuHelp.addAction(self.actionInstructionMB)
         self.menuBar.addAction(self.menuProject.menuAction())
         self.menuBar.addAction(self.menuWindow.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
@@ -1451,4 +1488,5 @@ class Ui_MainWindow(object):
         self.actionExplorerMB.setText(_translate("MainWindow", "Проводник"))
         self.actionGraphicsMB.setText(_translate("MainWindow", "Графики"))
         self.actionConsoleMB.setText(_translate("MainWindow", "Консоль"))
+        self.actionInstructionMB.setText(_translate("MainWindow", "Инструкция"))
 import ui.resources as resources
