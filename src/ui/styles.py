@@ -42,28 +42,61 @@ QMenu::item::selected{
 # -- Полоса прокрутки -- #
 StyleSheetScrollBar = """
 /* Удаление фона до и после scroll элемента */
-QScrollBar::add-page, QScrollBar::sub-page{
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical,
+QScrollBar::add-page:horizontal, QScrollBar::sub-page:horizontal {
     background: none;
-    border: 1px;
-    border-color: white;
+    border: none;
 }
-/* Линия scroll bar */
-QScrollBar{
+
+/* Основная линия scroll bar */
+QScrollBar:vertical, QScrollBar:horizontal {
     background: transparent;
-    margin: 0;
+    margin: 0px;
+    border: none;
 }
-/* Цвет scroll элемента */
-QScrollBar::handle{
-    margin: 5;
+
+/* Цвет scroll элемента в нормальном состоянии */
+QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
+    margin: 3px;
     background: #505A6E;
+    border-radius: 3px;
 }
+
+/* Цвет scroll элемента при наведении */
+QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
+    background: #60708C;  /* Более светлый оттенок */
+    margin: 3px;
+    border-radius: 3px;
+}
+
+/* Цвет scroll элемента при нажатии */
+QScrollBar::handle:vertical:pressed, QScrollBar::handle:horizontal:pressed {
+    background: #3c90a4;  /* Акцентный цвет */
+    margin: 3px;
+    border-radius: 3px;
+}
+
 /* Удаление дополнительных кнопок прокрутки vertical scroll */
 QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical {
     height: 0px;
+    border: none;
 }
+
 /* Удаление дополнительных кнопок прокрутки horizontal scroll */
-QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal  {
+QScrollBar::add-line:horizontal, QScrollBar::sub-line:horizontal {
     width: 0px;
+    border: none;
+}
+
+/* Дополнительно: стиль для фона всей полосы прокрутки при наведении */
+QScrollBar:vertical:hover, QScrollBar:horizontal:hover {
+    background: rgba(80, 90, 110, 0.1);  /* Легкий фон при наведении на всю полосу */
+}
+
+/* Стиль для углового элемента (пересечение вертикальной и горизонтальной полосы) */
+QScrollBar::corner {
+    background: transparent;
+    border: none;
 }
 """
 

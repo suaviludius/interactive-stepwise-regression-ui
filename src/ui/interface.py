@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'Resources/interface.ui'
+# Form implementation generated from reading ui file 'src/ui/resources/interface.ui'
 #
 # Created by: PyQt5 UI code generator 5.15.9
 #
@@ -14,8 +14,18 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(1163, 932)
-        MainWindow.setStyleSheet("/* Убираем разделители между виджетами */\n"
+        MainWindow.resize(1163, 760)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.MinimumExpanding)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(MainWindow.sizePolicy().hasHeightForWidth())
+        MainWindow.setSizePolicy(sizePolicy)
+        MainWindow.setStyleSheet("QMainWindow {\n"
+"      background-color: #2c313c;\n"
+"      border: 2px solid #3c90a4;  /* Цвет рамки */\n"
+"      border-radius: 8px;         /* Закругление углов */\n"
+"}\n"
+"/* Убираем разделители между виджетами */\n"
 "QMainWindow::separator{\n"
 "    width: 1px;\n"
 "    background-color: #2c313c;\n"
@@ -43,25 +53,56 @@ class Ui_MainWindow(object):
 "}\n"
 "\n"
 "/* Menu Inside  */\n"
-"QMenu{\n"
-"    background-color: #1f232a;\n"
-"    color: white;\n"
+"QMenu {\n"
+"    background-color: #2c313c;\n"
+"    border: 0px solid #3c90a4;  /* Добавим тонкую границу для четкости */\n"
+"    border-radius: 8px;\n"
+"    padding: 4px;  /* Уменьшим общий padding */\n"
+"    color: #dedede;\n"
+"    font-size: 13px;  /* Чуть уменьшим размер шрифта */\n"
+"    font-family: \"Segoe UI\", Arial, sans-serif;\n"
 "}\n"
-"/*\n"
+"\n"
 "QMenu::item {\n"
-"    padding: 5px 10px;\n"
+"    background-color: transparent;\n"
+"    padding: 8px 20px 8px 20px;\n"
+"    border-radius: 4px;\n"
+"    margin: 1px;  /* Минимальный отступ между пунктами */\n"
+"    border: none;\n"
+"    min-height: 20px;  /* Фиксированная высота пунктов */\n"
+"    min-width: 120px;  /* Минимальная ширина меню */\n"
 "}\n"
-"QMenu::indicator {\n"
-"    background-color: none;\n"
+"\n"
+"QMenu::item:selected {\n"
+"    background-color: #505A6E;\n"
+"    margin: 1px;  /* Убираем увеличение margin при выборе */\n"
+"    color: white;\n"
 "    border: none;\n"
 "}\n"
+"\n"
+"QMenu::separator {\n"
+"    height: 1px;\n"
+"    background-color: #dedede;  /* Более заметный цвет */\n"
+"    margin: 4px 8px;  /* Отступы сверху/снизу и по бокам */\n"
+"    border: none;\n"
+"}\n"
+"\n"
+"QMenu::indicator {\n"
+"    width: 10px;           /* Увеличиваем ширину */\n"
+"    height: 10px;          /* Увеличиваем высоту */\n"
+"    margin-left: 0px;      /* Отступ слева */\n"
+"    margin-right: 0px;     /* Отступ справа от галочки */\n"
+"    padding: 0px;          /* Внутренний отступ */\n"
+"}\n"
+"QMenu::indicator:unchecked {\n"
+"    image: none;\n"
+"}\n"
+"/* Отмеченное состояние */\n"
 "QMenu::indicator:checked {\n"
-"    margin-left: 2px;\n"
-"    margin-right: 2px;\n"
-"    background-color : #3c90a4;\n"
-"}*/\n"
-"\n"
-"\n"
+"    image: url(:/icons white/icons_white/check.svg);\n"
+"    background-color: transparent;\n"
+"    border: none;\n"
+"}\n"
 "\n"
 "/* Tool Widget */\n"
 "QToolBar{\n"
@@ -107,7 +148,7 @@ class Ui_MainWindow(object):
 "}\n"
 "QDockWidget::close-button:hover {\n"
 "    border-radius:  5px;\n"
-"    background: #8292B3;\n"
+"    background: #505A6E;\n"
 "}\n"
 "\n"
 "/* Tab Widget */\n"
@@ -200,6 +241,7 @@ class Ui_MainWindow(object):
 "    margin: 0px;\n"
 "    padding:0px;\n"
 "    background-repeat: no-repeat;\n"
+"    background-color: transparent;\n"
 "}\n"
 "#widgetActions QPushButton::hover, \n"
 "#widgetModes QPushButton::hover,  \n"
@@ -211,18 +253,17 @@ class Ui_MainWindow(object):
 "#widgetModes QPushButton::checked,  \n"
 "#widgetParameters QPushButton::checked, \n"
 "#widgetConstants QPushButton::checked{\n"
-"    background-color: none;\n"
+"    background-color: transparent;\n"
 "    background-image: url(:/icons white/icons_white/chevron-up.svg);\n"
 "    background-repeat: no-repeat;\n"
 "}\n"
-"/*\n"
-"#widgetActions QPushButton::checked, \n"
-"#widgetModes QPushButton::checked,  \n"
-"#widgetParameters QPushButton::checked, \n"
-"#widgetConstants QPushButton::checked{\n"
-"    image : url(:/icons white/icons_white/chevron-up.svg);\n"
+"#widgetActions QPushButton:checked:hover, \n"
+"#widgetModes QPushButton:checked:hover,  \n"
+"#widgetParameters QPushButton:checked:hover, \n"
+"#widgetConstants QPushButton:checked:hover{\n"
+"    background-color: #1f232a;\n"
+"    background-image: url(:/icons white/icons_white/chevron-up.svg);\n"
 "}\n"
-"*/\n"
 "\n"
 "/* Line Edit */\n"
 "QLineEdit, #dockAnalyse QLineEdit{\n"
@@ -500,14 +541,6 @@ class Ui_MainWindow(object):
         self.menuBar.setObjectName("menuBar")
         self.menuProject = QtWidgets.QMenu(self.menuBar)
         self.menuProject.setObjectName("menuProject")
-        self.menuRecentMB = QtWidgets.QMenu(self.menuProject)
-        self.menuRecentMB.setObjectName("menuRecentMB")
-        self.menuEdit = QtWidgets.QMenu(self.menuBar)
-        self.menuEdit.setObjectName("menuEdit")
-        self.menuView = QtWidgets.QMenu(self.menuBar)
-        self.menuView.setObjectName("menuView")
-        self.menuSettings = QtWidgets.QMenu(self.menuBar)
-        self.menuSettings.setObjectName("menuSettings")
         self.menuWindow = QtWidgets.QMenu(self.menuBar)
         self.menuWindow.setObjectName("menuWindow")
         self.menuHelp = QtWidgets.QMenu(self.menuBar)
@@ -526,6 +559,11 @@ class Ui_MainWindow(object):
         MainWindow.addToolBar(QtCore.Qt.LeftToolBarArea, self.toolBar)
         self.dockExplorer = QtWidgets.QDockWidget(MainWindow)
         self.dockExplorer.setEnabled(True)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.dockExplorer.sizePolicy().hasHeightForWidth())
+        self.dockExplorer.setSizePolicy(sizePolicy)
         self.dockExplorer.setFloating(False)
         self.dockExplorer.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetMovable)
         self.dockExplorer.setObjectName("dockExplorer")
@@ -565,6 +603,7 @@ class Ui_MainWindow(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockAnalyse.sizePolicy().hasHeightForWidth())
         self.dockAnalyse.setSizePolicy(sizePolicy)
+        self.dockAnalyse.setMinimumSize(QtCore.QSize(293, 623))
         font = QtGui.QFont()
         font.setPointSize(-1)
         self.dockAnalyse.setFont(font)
@@ -822,7 +861,7 @@ class Ui_MainWindow(object):
         font.setBold(False)
         font.setWeight(50)
         self.buttonHandMode.setFont(font)
-        self.buttonHandMode.setText("Ручн. отбор")
+        self.buttonHandMode.setText("Пошаг. отбор")
         self.buttonHandMode.setCheckable(True)
         self.buttonHandMode.setChecked(False)
         self.buttonHandMode.setObjectName("buttonHandMode")
@@ -1138,11 +1177,13 @@ class Ui_MainWindow(object):
         self.dockAnalyse.setWidget(self.dockAnalyseContainer)
         MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockAnalyse)
         self.dockGraphics = QtWidgets.QDockWidget(MainWindow)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockGraphics.sizePolicy().hasHeightForWidth())
         self.dockGraphics.setSizePolicy(sizePolicy)
+        self.dockGraphics.setMinimumSize(QtCore.QSize(250, 150))
+        self.dockGraphics.setLayoutDirection(QtCore.Qt.LeftToRight)
         self.dockGraphics.setFeatures(QtWidgets.QDockWidget.DockWidgetClosable|QtWidgets.QDockWidget.DockWidgetMovable)
         self.dockGraphics.setObjectName("dockGraphics")
         self.dockGraphicsContainer = QtWidgets.QWidget()
@@ -1158,7 +1199,7 @@ class Ui_MainWindow(object):
         self.verticalLayout_12.setSpacing(11)
         self.verticalLayout_12.setObjectName("verticalLayout_12")
         self.dockGraphicsSubContainer = QtWidgets.QWidget(self.dockGraphicsContainer)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.dockGraphicsSubContainer.sizePolicy().hasHeightForWidth())
@@ -1214,7 +1255,8 @@ class Ui_MainWindow(object):
         self.buttonGrE.setObjectName("buttonGrE")
         self.horizontalLayout_4.addWidget(self.buttonGrE)
         self.verticalLayout_11.addWidget(self.GraphicsButtons)
-        self.Graphics = QtWidgets.QFrame(self.dockGraphicsSubContainer)
+        self.verticalLayout_12.addWidget(self.dockGraphicsSubContainer, 0, QtCore.Qt.AlignTop)
+        self.Graphics = QtWidgets.QFrame(self.dockGraphicsContainer)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -1224,10 +1266,9 @@ class Ui_MainWindow(object):
         self.Graphics.setFrameShape(QtWidgets.QFrame.StyledPanel)
         self.Graphics.setFrameShadow(QtWidgets.QFrame.Raised)
         self.Graphics.setObjectName("Graphics")
-        self.verticalLayout_11.addWidget(self.Graphics)
-        self.verticalLayout_12.addWidget(self.dockGraphicsSubContainer)
+        self.verticalLayout_12.addWidget(self.Graphics)
         self.dockGraphics.setWidget(self.dockGraphicsContainer)
-        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(2), self.dockGraphics)
+        MainWindow.addDockWidget(QtCore.Qt.DockWidgetArea(1), self.dockGraphics)
         self.actionOpenFolderMB = QtWidgets.QAction(MainWindow)
         self.actionOpenFolderMB.setObjectName("actionOpenFolderMB")
         self.actionOpenFileMB = QtWidgets.QAction(MainWindow)
@@ -1320,23 +1361,25 @@ class Ui_MainWindow(object):
         self.actionConsoleMB.setCheckable(True)
         self.actionConsoleMB.setEnabled(True)
         self.actionConsoleMB.setObjectName("actionConsoleMB")
-        self.menuRecentMB.addAction(self.actioninterface_ui)
-        self.menuRecentMB.addAction(self.actionnew_ui)
-        self.menuProject.addAction(self.actionNewProjectMB)
+        self.actionHelpMB = QtWidgets.QAction(MainWindow)
+        self.actionHelpMB.setText("")
+        self.actionHelpMB.setIconText("")
+        self.actionHelpMB.setToolTip("")
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.actionHelpMB.setFont(font)
+        self.actionHelpMB.setObjectName("actionHelpMB")
+        self.actionInstructionMB = QtWidgets.QAction(MainWindow)
+        self.actionInstructionMB.setObjectName("actionInstructionMB")
         self.menuProject.addAction(self.actionOpenFolderMB)
         self.menuProject.addAction(self.actionOpenFileMB)
-        self.menuProject.addAction(self.menuRecentMB.menuAction())
         self.menuProject.addSeparator()
         self.menuProject.addAction(self.actionSave)
-        self.menuProject.addAction(self.actionSave_As)
         self.menuWindow.addAction(self.actionExplorerMB)
         self.menuWindow.addAction(self.actionAnalyseMB)
         self.menuWindow.addAction(self.actionGraphicsMB)
-        self.menuWindow.addAction(self.actionConsoleMB)
+        self.menuHelp.addAction(self.actionInstructionMB)
         self.menuBar.addAction(self.menuProject.menuAction())
-        self.menuBar.addAction(self.menuEdit.menuAction())
-        self.menuBar.addAction(self.menuView.menuAction())
-        self.menuBar.addAction(self.menuSettings.menuAction())
         self.menuBar.addAction(self.menuWindow.menuAction())
         self.menuBar.addAction(self.menuHelp.menuAction())
         self.toolBar.addAction(self.actionHomeTB)
@@ -1347,7 +1390,7 @@ class Ui_MainWindow(object):
         self.toolBar.addAction(self.actionTreeTB)
 
         self.retranslateUi(MainWindow)
-        self.mainCenterBodyStacked.setCurrentIndex(1)
+        self.mainCenterBodyStacked.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -1370,10 +1413,6 @@ class Ui_MainWindow(object):
 "</style></head><body style=\" font-family:\'MS Shell Dlg 2\'; font-size:10pt; font-weight:696; font-style:normal;\">\n"
 "<p style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:7.8pt; font-weight:400;\"><br /></p></body></html>"))
         self.menuProject.setTitle(_translate("MainWindow", "Файл"))
-        self.menuRecentMB.setTitle(_translate("MainWindow", "Последние"))
-        self.menuEdit.setTitle(_translate("MainWindow", "Правка"))
-        self.menuView.setTitle(_translate("MainWindow", "Вид"))
-        self.menuSettings.setTitle(_translate("MainWindow", "Настройки"))
         self.menuWindow.setTitle(_translate("MainWindow", "Окно"))
         self.menuHelp.setTitle(_translate("MainWindow", "Справка"))
         self.toolBar.setWindowTitle(_translate("MainWindow", "toolBar"))
@@ -1395,7 +1434,7 @@ class Ui_MainWindow(object):
         self.buttonStepwise.setToolTip(_translate("MainWindow", "Прямое включение"))
         self.buttonStepwise.setText(_translate("MainWindow", "ПВ"))
         self.buttonAutoMode.setToolTip(_translate("MainWindow", "Автоматический отбор переменных"))
-        self.buttonHandMode.setToolTip(_translate("MainWindow", "Ручной отбор переменных"))
+        self.buttonHandMode.setToolTip(_translate("MainWindow", "Пошаговый отбор переменных"))
         self.countYComboBox.setToolTip(_translate("MainWindow", "Количество зависимых переменных"))
         self.choiceYComboBox.setToolTip(_translate("MainWindow", "Зависимые переменные"))
         self.labelParameters.setText(_translate("MainWindow", "Параметры"))
@@ -1449,4 +1488,5 @@ class Ui_MainWindow(object):
         self.actionExplorerMB.setText(_translate("MainWindow", "Проводник"))
         self.actionGraphicsMB.setText(_translate("MainWindow", "Графики"))
         self.actionConsoleMB.setText(_translate("MainWindow", "Консоль"))
+        self.actionInstructionMB.setText(_translate("MainWindow", "Инструкция"))
 import ui.resources as resources
