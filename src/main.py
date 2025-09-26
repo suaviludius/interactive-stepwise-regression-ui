@@ -4,6 +4,11 @@
 import sys
 import os # Модуль для работы с файловой системой (функции операционной системы)
 from datetime import datetime
+import random
+import numpy as np
+
+import openpyxl
+from openpyxl.styles import PatternFill
 
 # -- GUI -----------------------------------------------------------
 from PyQt5 import QtCore, QtGui, QtWidgets
@@ -12,10 +17,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui     import QIcon
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QPushButton, QTextEdit
 
+# -- Import Regression & Design -------------------------------------------------
 # Добавляем родительскую папку в путь
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-# -- Import Regression & Design -------------------------------------------------
 from src.core import StepwiseRegressionEngine   # Class Regression
 from src.ui import FileHandler, FramelessWindow, Ui_MainWindow, StyleSheetTableDatabase, StyleSheetStatusBar, StyleSheetScrollBar, StyleSheetApp
 
@@ -94,10 +98,67 @@ class MainWindow(QMainWindow):
         # Обработка нажатия кнопок для верхнего menuBar
         self.ui.actionOpenFileMB.triggered.connect(lambda: self.selectFile())
         self.ui.actionOpenFolderMB.triggered.connect(lambda: self.selectFolder())
+        self.ui.actionSave.triggered.connect(lambda: self.saveFile())
         self.ui.actionExplorerMB.triggered.connect(lambda:self.ui.dockExplorer.setVisible(self.ui.actionExplorerMB.isChecked()))
         self.ui.actionAnalyseMB.triggered.connect(lambda: self.ui.dockAnalyse.setVisible(self.ui.actionAnalyseMB.isChecked()))
         self.ui.actionGraphicsMB.triggered.connect(lambda: self.ui.dockGraphics.setVisible(self.ui.actionGraphicsMB.isChecked()))
         self.ui.actionInstructionMB.triggered.connect(self.showInstruction)
+
+    def saveFile(self):
+        """
+        Сохраняет Excel файл с цветными столбцами с проверкой существования файла
+        """
+        # Проверяем существование файла
+        try:
+        # Загружаем workbook
+            wb = openpyxl.load_workbook(self.MR.FileName)
+            ws = wb.active
+
+            # Создаем стили заливки
+            green_fill = PatternFill(start_color='bcf5d3', end_color='bcf5d3', fill_type='solid')
+            red_fill = PatternFill(start_color='ffc5c5', end_color='ffc5c5', fill_type='solid')
+
+            print(self.MR.IndX_ADD, self.MR.IndX_DEL)
+            # Применяем цвета к столбцам
+            for col_idx in self.MR.IndX_ADD:
+                col_letter = openpyxl.utils.get_column_letter(col_idx+1)
+                for cell in ws[col_letter]:
+                    cell.fill = green_fill
+
+            for col_idx in self.MR.IndX_DEL:
+                col_letter = openpyxl.utils.get_column_letter(col_idx+1)
+                for cell in ws[col_letter]:
+                    cell.fill = red_fill
+
+            # Диалог выбора места сохранения
+            options = QFileDialog.Options()
+            default_filename = f"colored_{os.path.basename(self.MR.FileName)}"
+
+            output_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Сохранить цветной Excel файл",
+                default_filename,
+                "Excel Files (*.xlsx);;All Files (*)",
+                options=options
+            )
+
+            # Если пользователь нажал "Отмена"
+            if not output_path:
+                self.statusBar.showMessage("Сохранение отменено")
+                return None
+
+            # Добавляем расширение .xlsx если его нет
+            if not output_path.lower().endswith('.xlsx'):
+                output_path += '.xlsx'
+
+            # Сохраняем файл
+            wb.save(output_path)
+            self.statusBar.showMessage(f"Файл сохранен: {output_path}")
+            return output_path
+
+        except Exception as e:
+            self.statusBar.showMessage(f"Ошибка при сохранении файла: {str(e)}")
+            return None
 
     def showInstruction(self):
         """Показывает инструкцию по использованию приложения."""
@@ -105,30 +166,39 @@ class MainWindow(QMainWindow):
     <h1>Инструкция по использованию приложения</h1>
     <h2>Анализ множественной линейной регрессии</h2>
 
-    <h3>📁 1. Загрузка данных</h3>
-    <p><b>Шаг 1:</b> Нажмите кнопку "Выбрать файл" или "Выбрать папку" на главной странице</p>
+    <h3> 1. Загрузка данных</h3>
+    <p><b>Шаг 1:</b> Нажмите кнопку "Файл" на главной странице или перейдите в меню "Файл" и нажмите "Выбрать файл" или "Выбрать папку"</p>
     <p><b>Шаг 2:</b> Выберите файл данных в формате .xlsx</p>
     <p><b>Требования к данным:</b></p>
     <ul>
+        <li>Лист с данными должен называться "Лист1"</li>
         <li>Независимые переменные (X) должны располагаться в первых столбцах</li>
         <li>Зависимые переменные (Y) - в последних столбцах</li>
         <li>Первая строка должна содержать названия переменных</li>
     </ul>
 
-    <h3>⚙️ 2. Настройка анализа</h3>
-    <p><b>Шаг 3:</b> Перейдите в раздел "Анализ" (кнопка с графиком в левой панели)</p>
-    <p><b>Шаг 4:</b> В доке "Анализ" выполните:</p>
+    <h3> 2. Настройка анализа</h3>
+    <p><b>Шаг 3:</b> Перейдите в раздел "Анализ" (вторая кнопка в левой панели)</p>
+    <p><b>Шаг 4:</b> В виджете "Анализ" выполните:</p>
     <ul>
         <li>Выберите количество зависимых переменных</li>
         <li>Выберите конкретную зависимую переменную для анализа</li>
-        <li>Настройте параметры алгоритма при необходимости</li>
+        <li>Выберите метод отбора переменных</li>
+        <li>Выберите режим использования алгоритма при необходимости</li>
     </ul>
 
-    <h3>🔍 3. Выполнение пошагового анализа</h3>
+    <h3> 3. Выполнение пошагового анализа</h3>
     <p><b>Методы анализа:</b></p>
     <ul>
         <li><b>Обратное исключение</b> - начинается с полной модели, последовательно удаляет наименее значимые переменные</li>
         <li><b>Прямое включение</b> - начинается с пустой модели, последовательно добавляет наиболее значимые переменные</li>
+    </ul>
+    <p><b>Режимы алгоритма:</b></p>
+    <ul>
+        <li><b>Авто отбор</b> - выполняет алгоритмы отбора до достижения критериев:
+        коэффициент статистики (КС) превышает заданный порог (КС Const), а коэффициент детерминации (КД)
+        не ниже минимального значения (КД Const)</li>
+        <li><b>Пошаговый отбор</b> - пошаговое выполнение метода без ограничений</li>
     </ul>
 
     <p><b>Управление процессом:</b></p>
@@ -137,37 +207,39 @@ class MainWindow(QMainWindow):
         <li>Кнопка <b>"Назад"</b> - отменить последний шаг</li>
         <li>Кнопка <b>"Заполнить"</b> - включить все переменные в модель</li>
         <li>Кнопка <b>"Очистить"</b> - удалить все переменные из модели</li>
+        <li>Кнопка <b>"+"</b> - добавить независимую переменную</li>
+        <li>Кнопка <b>"-"</b> - удалить независимую переменную</li>
     </ul>
 
-    <h3>📊 4. Анализ результатов</h3>
+    <h3> 4. Анализ результатов</h3>
     <p><b>В реальном времени отслеживайте:</b></p>
     <ul>
-        <li>Коэффициент детерминации (R²)</li>
-        <li>F-статистику</li>
-        <li>Стандартную ошибку оценки</li>
+        <li>Коэффициент детерминации (КД или R²)</li>
+        <li>Коэффициент статистики (КС или F-статистику)ы </li>
+        <li>Стандартную ошибку оценки (ОД, НОД, ОСКО)</li>
         <li>Графики изменения метрик</li>
     </ul>
 
-    <h3>💾 5. Сохранение результатов</h3>
+    <h3> 5. Сохранение результатов</h3>
     <p><b>Шаг 5:</b> Перейдите в раздел "Отчет"</p>
     <p><b>Шаг 6:</b> Нажмите "Создать отчет" для сохранения результатов в файл .rep</p>
 
-    <h3>🎯 Советы по использованию</h3>
+    <h3> Советы по использованию</h3>
     <ul>
-        <li>Используйте автоматический режим для быстрого анализа</li>
+        <li>Используйте автоматический режим для быстрого анализа, по заранее выставленным порогам (КС и КД Const)</li>
         <li>Ручной режим позволяет контролировать каждый шаг</li>
         <li>Следите за изменением R² - он не должен значительно уменьшаться</li>
         <li>Анализируйте графики для визуальной оценки процесса</li>
     </ul>
 
-    <h3>❌ Возможные проблемы и решения</h3>
+    <h3> Возможные проблемы и решения</h3>
     <ul>
         <li><b>Файл не загружается</b> - проверьте формат и структуру данных</li>
         <li><b>Алгоритм не работает</b> - убедитесь, что выбрана зависимая переменная</li>
         <li><b>Некорректные результаты</b> - проверьте мультиколлинеарность переменных</li>
     </ul>
 
-    <p style="color: #3c90a4; font-weight: bold;">📞 Для дополнительной помощи: powerranger1912@gmail.com</p>
+    <p style="color: #3c90a4; font-weight: bold;"> Для дополнительной помощи: denisDanilkopatich@gmail.com</p>
     """
 
         # Создаем диалоговое окно с инструкцией
@@ -219,7 +291,7 @@ class MainWindow(QMainWindow):
         # Компоновка
         layout = QVBoxLayout()
         layout.addWidget(text_edit)
-        layout.addWidget(close_button, alignment=Qt.AlignCenter)
+        layout.addWidget(close_button)
         dialog.setLayout(layout)
 
         # Показываем диалог
@@ -330,7 +402,7 @@ class MainWindow(QMainWindow):
     # Цикл братной ликвидации
     def backwardElimination(self):
         self.statusBar.showMessage("Обратная ликвидация")
-        while self.MR.R2 > self.MR.Const_R2:
+        while self.MR.R2 > self.MR.Const_R2 and len(self.MR.IndX_ADD) > 1:
             self.backwardEliminationStep()
 
     # Шаг обратной ликвидации
@@ -344,9 +416,8 @@ class MainWindow(QMainWindow):
     # Цикл прямого включения
     def stepwise(self):
         self.statusBar.showMessage("Прямое включение")
-        if(self.MR.FSKF <= self.MR.Const_FSKF):
-            while self.MR.FSKF < self.MR.Const_FSKF:
-                self.stepwiseStep()
+        while self.MR.FSKF < self.MR.Const_FSKF and len(self.MR.IndX_DEL) > 1:
+            self.stepwiseStep()
 
     # Шаг прямого включения
     def stepwiseStep(self):
@@ -436,7 +507,7 @@ class MainWindow(QMainWindow):
     def actionsMW(self):
         self.ui.buttonSelectFile.clicked.connect(self.selectFile) # Выбор файла с данными
         self.ui.buttonSelectFolder.clicked.connect(self.selectFolder) # Выбор рабочей папки
-
+        self.ui.butonRandomData.clicked.connect(self.selectRandom) # Генерация файла со случайными данными
     #---------------------------------#
 
     # Выбор рабочего файла
@@ -458,6 +529,94 @@ class MainWindow(QMainWindow):
         self.statusBar.showMessage("Выбрана папка: {}".format(pathFolder)) # Сообщение в statusBar
         self.ui.buttonSelectFolder.setVisible(False)
         self.ui.dockExplorer.setVisible(1)
+
+
+    def selectRandom(self):
+        """
+        Создает Excel файл с примером данных X1-X5, Y1-Y3 и случайными числами
+        """
+        try:
+            n_samples = 15
+            n_x = 5
+            n_y = 3
+
+            # Генерируем независимые X
+            X = np.zeros((n_samples, n_x))
+            for i in range(n_x):
+                # Базовая переменная + небольшой уникальный шум
+                base = np.random.normal(50, 20, n_samples)
+                unique_noise = np.random.normal(0, 5, n_samples)
+                X[:, i] = base + (i + 1) * unique_noise  # делаем каждую переменную уникальной
+
+            # Обеспечиваем разнообразие (разные распределения)
+            X[:, 0] = np.random.uniform(10, 90, n_samples)  # равномерное распределение
+            X[:, 1] = np.random.normal(50, 15, n_samples)   # нормальное распределение
+            X[:, 2] = 30 + np.random.exponential(10, n_samples)  # экспоненциальное
+            X[:, 3] = np.random.lognormal(3, 0.5, n_samples) * 10  # логнормальное
+            X[:, 4] = np.random.gamma(2, 15, n_samples)  # гамма-распределение
+            
+            # Обрезаем значения 0-100
+            X = np.clip(X, 0, 100)
+            
+            # Создаем Y как линейные комбинации X с разными коэффициентами
+            coefficients = np.array([
+                [1.2, -0.8, 0.5, -1.1, 0.9],   # для Y1
+                [-0.7, 1.3, -0.6, 0.8, -1.0],  # для Y2
+                [0.5, -0.9, 1.1, -0.4, 0.7]    # для Y3
+            ]).T
+            
+            Y = X @ coefficients + np.random.normal(0, 3, (n_samples, n_y))
+            Y = np.clip(Y, 0, 100)
+            
+            # Создаем Excel
+            wb = openpyxl.Workbook()
+            wb.remove(wb.active)
+            ws = wb.create_sheet("Лист1", 0)
+            
+            headers = [f'X{i+1}' for i in range(n_x)] + [f'Y{i+1}' for i in range(n_y)]
+            ws.append(headers)
+            
+            for i in range(n_samples):
+                row_data = [round(float(X[i, j]), 2) for j in range(n_x)] + \
+                        [round(float(Y[i, j]), 2) for j in range(n_y)]
+                ws.append(row_data)
+            
+            # Генерируем имя файла по умолчанию
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            default_filename = f"sample_data_{timestamp}.xlsx"
+
+            # Диалог выбора места сохранения
+            options = QFileDialog.Options()
+            output_path, _ = QFileDialog.getSaveFileName(
+                self,
+                "Сохранить пример Excel файла",
+                default_filename,
+                "Excel Files (*.xlsx);;All Files (*)",
+                options=options
+            )
+
+            # Если пользователь нажал "Отмена"
+            if not output_path:
+                self.statusBar.showMessage("Создание файла отменено")
+                return None
+
+            # Добавляем расширение .xlsx если его нет
+            if not output_path.lower().endswith('.xlsx'):
+                output_path += '.xlsx'
+
+            # Сохраняем файл
+            wb.save(output_path)
+
+            self.statusBar.showMessage(f"Файл создан: {output_path}")
+            pathFolder = os.path.dirname(output_path)
+            self.setFT(pathFolder) # Инициализация файлового дерева
+            self.ui.buttonSelectFolder.setVisible(False)
+            self.FT.openFile(output_path)
+            return output_path
+
+        except Exception as e:
+            self.statusBar.showMessage(f"Ошибка при создании файла: {str(e)}")
+            return None
 
     ###################################
     # [ Обработка кнопок reportWindow ] #
@@ -601,6 +760,27 @@ class MainWindow(QMainWindow):
 
         self.ui.lineEditKDConst.setText(str(self.MR.Const_R2))
         self.ui.lineEditKSConst.setText(str(self.MR.Const_FSKF))
+
+        # Один обработчик для всех lineEdit
+        self.ui.lineEditKDConst.textChanged.connect(self.on_float_text_changed)
+        self.ui.lineEditKSConst.textChanged.connect(self.on_float_text_changed)
+
+    def on_float_text_changed(self, text):
+        sender = self.sender()  # Получаем объект, который отправил сигнал
+
+        if sender == self.ui.lineEditKDConst:
+            try:
+                self.MR.Const_R2 = float(text.replace(',', '.'))
+                self.statusBar.showMessage(f"Const_R2 обновлен: {self.MR.Const_R2}")
+            except ValueError:
+                self.statusBar.showMessage("Ошибка: введите корректное число для Const_R2")
+
+        elif sender == self.ui.lineEditKSConst:
+            try:
+                self.MR.Const_FSKF = float(text.replace(',', '.'))
+                self.statusBar.showMessage(f"Const_FSKF обновлен: {self.MR.Const_FSKF}")
+            except ValueError:
+                self.statusBar.showMessage("Ошибка: введите корректное число для Const_FSKF")
 
     ##############################################
     # [ Работа c tableDatabase ] #
