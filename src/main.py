@@ -348,6 +348,7 @@ class MainWindow(QMainWindow):
         self.Ynum = self.MR.Columns - self.ui.countYComboBox.currentIndex() + self.ui.choiceYComboBox.currentIndex() - 1    # Номер столбца Y для функции закрашивания
         self.changeBackgrounColor(list(range(self.MR.ColumnsX_BUF, self.MR.Columns)),'#505A6E','#f6f9ff')
         self.changeBackgrounColor([self.Ynum],'#255a66','#f6f9ff')
+        self.setFillTable()
 
     # Выбор количества зависимых переменных
     def setCountDepVar(self):
@@ -365,18 +366,20 @@ class MainWindow(QMainWindow):
     # Отчистить содержимое таблицы (красный цвет - элемент удаоен)
     def setCleanTable(self):
         self.MR.cleanTable()
+        self.setEditTextBox()
         self.changeBackgrounColor(list(range(self.MR.ColumnsX_BUF)),'#ffc5c5','#3e4556')
         self.graphicsDraw()
 
     # Заполнить таблицу данными (зеленый цвет - элемент добавлен)
     def setFillTable(self):
         self.MR.filledTable()
+        self.setEditTextBox()
         self.changeBackgrounColor(list(range(self.MR.ColumnsX_BUF)),'#bcf5d3','#3e4556')
         self.graphicsDraw()
 
     # Кнопка возврата действия
     def setBackup(self):
-        self.MR.outBackup()
+        self.MR.outBackup() 
         for i in range(len(self.MR.X_BUF[0])):
             if i in self.MR.IndX_ADD: self.changeBackgrounColor([i],'#bcf5d3','#3e4556')
             else: self.changeBackgrounColor([i],'#ffc5c5','#3e4556')
@@ -536,51 +539,90 @@ class MainWindow(QMainWindow):
         Создает Excel файл с примером данных X1-X5, Y1-Y3 и случайными числами
         """
         try:
-            n_samples = 15
+            n_samples = 50  # Увеличиваем количество наблюдений для лучшей регрессии
             n_x = 5
             n_y = 3
 
-            # Генерируем независимые X
-            X = np.zeros((n_samples, n_x))
-            for i in range(n_x):
-                # Базовая переменная + небольшой уникальный шум
-                base = np.random.normal(50, 20, n_samples)
-                unique_noise = np.random.normal(0, 5, n_samples)
-                X[:, i] = base + (i + 1) * unique_noise  # делаем каждую переменную уникальной
+            # 1. Генерируем независимые переменные X с контролируемой корреляцией
+            np.random.seed(int(datetime.now().timestamp()) % 1000)  # Случайный seed
 
-            # Обеспечиваем разнообразие (разные распределения)
-            X[:, 0] = np.random.uniform(10, 90, n_samples)  # равномерное распределение
-            X[:, 1] = np.random.normal(50, 15, n_samples)   # нормальное распределение
-            X[:, 2] = 30 + np.random.exponential(10, n_samples)  # экспоненциальное
-            X[:, 3] = np.random.lognormal(3, 0.5, n_samples) * 10  # логнормальное
-            X[:, 4] = np.random.gamma(2, 15, n_samples)  # гамма-распределение
-            
-            # Обрезаем значения 0-100
-            X = np.clip(X, 0, 100)
-            
-            # Создаем Y как линейные комбинации X с разными коэффициентами
-            coefficients = np.array([
-                [1.2, -0.8, 0.5, -1.1, 0.9],   # для Y1
-                [-0.7, 1.3, -0.6, 0.8, -1.0],  # для Y2
-                [0.5, -0.9, 1.1, -0.4, 0.7]    # для Y3
-            ]).T
-            
-            Y = X @ coefficients + np.random.normal(0, 3, (n_samples, n_y))
-            Y = np.clip(Y, 0, 100)
-            
+            # Базовые независимые переменные с разными распределениями
+            X = np.zeros((n_samples, n_x))
+
+            # X1: Нормальное распределение (основной фактор)
+            X[:, 0] = np.random.normal(50, 15, n_samples)
+
+            # X2: Равномерное распределение (слабая корреляция с X1)
+            X[:, 1] = 0.3 * X[:, 0] + np.random.uniform(20, 80, n_samples)
+
+            # X3: Логнормальное распределение (независимый фактор)
+            X[:, 2] = np.random.lognormal(3, 0.4, n_samples) * 8
+
+            # X4: Показательное распределение (умеренная корреляция с X1)
+            X[:, 3] = 0.5 * X[:, 0] + np.random.exponential(15, n_samples)
+
+            # X5: Гамма распределение (независимый фактор)
+            X[:, 4] = np.random.gamma(2, 12, n_samples)
+
+            # Нормализуем и масштабируем X
+            X = (X - np.mean(X, axis=0)) / np.std(X, axis=0)  # Стандартизация
+            X = 25 + 50 * (X - np.min(X, axis=0)) / (np.max(X, axis=0) - np.min(X, axis=0))  # Масштабирование 0-100
+            X = np.clip(X, 1, 99)
+            X = np.round(X, 2)
+
+            # 2. Создаем реалистичные коэффициенты регрессии
+            # Каждая Y переменная имеет разную зависимость от X
+            true_coefficients = np.array([
+                # X1   X2   X3   X4   X5   Intercept
+                [ 2.5, -1.8,  0.9, -1.2,  0.7,  10.0],  # Y1: сильно зависит от X1, X2
+                [-1.2,  1.5, -0.6,  0.8, -0.9,  15.0],  # Y2: сильно зависит от X2, X4
+                [ 0.8, -0.7,  1.3, -0.5,  1.1,   8.0]   # Y3: сильно зависит от X3, X5
+            ])
+
+            # 3. Генерируем Y переменные на основе линейной модели
+            Y = np.zeros((n_samples, n_y))
+
+            # Добавляем столбец единиц для intercept
+            X_with_intercept = np.column_stack([np.ones(n_samples), X])
+
+            for j in range(n_y):
+                # Линейная комбинация: Y = β0 + β1*X1 + β2*X2 + ... + β5*X5 + ε
+                deterministic_part = X_with_intercept @ true_coefficients[j]
+
+                # Добавляем случайную ошибку (10% от диапазона Y)
+                noise_std = 0.1 * (np.max(deterministic_part) - np.min(deterministic_part))
+                noise = np.random.normal(0, noise_std, n_samples)
+
+                Y[:, j] = deterministic_part + noise
+
+            # Масштабируем Y к реалистичному диапазону
+            Y = 5 + 90 * (Y - np.min(Y)) / (np.max(Y) - np.min(Y))
+            Y = np.clip(Y, 1, 100)
+            Y = np.round(Y, 2)
+
+            # 4. Проверяем пригодность данных для регрессии
+            correlation_matrix = np.corrcoef(X.T)
+            np.fill_diagonal(correlation_matrix, 0)  # Исключаем диагональ
+            max_correlation = np.max(np.abs(correlation_matrix))
+
+            self.statusBar.showMessage(f"Максимальная корреляция между X: {max_correlation:.3f}")
+
+            if max_correlation > 0.8:
+                self.statusBar.showMessage("Предупреждение: возможна мультиколлинеарность")
+
             # Создаем Excel
             wb = openpyxl.Workbook()
             wb.remove(wb.active)
             ws = wb.create_sheet("Лист1", 0)
-            
+
             headers = [f'X{i+1}' for i in range(n_x)] + [f'Y{i+1}' for i in range(n_y)]
             ws.append(headers)
-            
+
             for i in range(n_samples):
                 row_data = [round(float(X[i, j]), 2) for j in range(n_x)] + \
                         [round(float(Y[i, j]), 2) for j in range(n_y)]
                 ws.append(row_data)
-            
+
             # Генерируем имя файла по умолчанию
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             default_filename = f"sample_data_{timestamp}.xlsx"
@@ -697,8 +739,9 @@ class MainWindow(QMainWindow):
 
                 f.write("Ранжирование по влиянию на результат:\n")
                 for i, (var_name, pac) in enumerate(sorted_pac, 1):
-                    influence = "Высокое" if abs(pac) > 0.3 else "Среднее" if abs(pac) > 0.1 else "Низкое"
+                    influence = "Высокое" if (pac) > 0.3 else "Среднее" if abs(pac) > 0.1 else "Низкое"
                     f.write(f"{i}. {var_name}: {pac*100:6.2f}% ({influence} влияние)\n")
+                    f.write(f"   → При изменении {var_name} на 1%, Y изменяется на {pac*100:+.2f}%\n")
                 f.write("\n")
 
     def openReport(self, file_name):
@@ -750,20 +793,24 @@ class MainWindow(QMainWindow):
 
     # Редактирование полей с параметрами регрессии
     def setEditTextBox(self):
-        self.ui.lineEditKK.setText(str(self.MR.R))
-        self.ui.lineEditKD.setText(str(self.MR.R2))
-        self.ui.lineEditKS.setText(str(self.MR.FSKF))
+        try:
+            self.ui.lineEditKK.setText(str(self.MR.R))
+            self.ui.lineEditKD.setText(str(self.MR.R2))
+            self.ui.lineEditKS.setText(str(self.MR.FSKF))
 
-        self.ui.lineEditOD.setText(str(self.MR.Y_Se2))
-        self.ui.lineEditNOD.setText(str(self.MR.Y_S2))
-        self.ui.lineEditOSKO.setText(str(self.MR.Y_S))
+            self.ui.lineEditOD.setText(str(self.MR.Y_Se2))
+            self.ui.lineEditNOD.setText(str(self.MR.Y_S2))
+            self.ui.lineEditOSKO.setText(str(self.MR.Y_S))
 
-        self.ui.lineEditKDConst.setText(str(self.MR.Const_R2))
-        self.ui.lineEditKSConst.setText(str(self.MR.Const_FSKF))
+            self.ui.lineEditKDConst.setText(str(self.MR.Const_R2))
+            self.ui.lineEditKSConst.setText(str(self.MR.Const_FSKF))
 
-        # Один обработчик для всех lineEdit
-        self.ui.lineEditKDConst.textChanged.connect(self.on_float_text_changed)
-        self.ui.lineEditKSConst.textChanged.connect(self.on_float_text_changed)
+            # Один обработчик для всех lineEdit
+            self.ui.lineEditKDConst.textChanged.connect(self.on_float_text_changed)
+            self.ui.lineEditKSConst.textChanged.connect(self.on_float_text_changed)
+
+        except Exception as e:
+                self.statusBar.showMessage(f"Ошибка записи параметров: {str(e)}")
 
     def on_float_text_changed(self, text):
         sender = self.sender()  # Получаем объект, который отправил сигнал
