@@ -5,7 +5,7 @@ Then select the correct python version from the dropdown menu.
 GLOBAL must to correct this error.
 
 To convert resources.qrc from qrc to py u should:
-pyrcc5 resources.qrc -o resources_rc.py
+pyrcc5 resources.qrc -o resources.py
 
 To convert interface.ui from ui to py u should:
-python -m PyQt5.uic.pyuic Resources/interface.ui -o ui_interface.py
+python -m PyQt5.uic.pyuic src/ui/resources/interface.ui -o src/ui/interface.py
