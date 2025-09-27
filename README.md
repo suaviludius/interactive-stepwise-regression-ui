@@ -63,7 +63,6 @@ interactive-stepwise-regression-ui/
 │   ├── ui/                          # Графический интерфейс
 │   │   ├── __init__.py
 │   │   ├── file_handler.py
-│   │   ├── frameless_window.py
 │   │   ├── styles.py
 │   │   ├── interface.py             # Сгенерированный из .ui файла
 │   │   ├── resources.py             # Скомпилированный из .qrc файла
@@ -76,8 +75,8 @@ interactive-stepwise-regression-ui/
 ├── tests/                           # ТЕСТЫ (теперь здесь будет код)
 │   ├── __init__.py
 │   ├── conftest.py                  # Фикстуры для pytest
-│   ├── test_regression_core.py      # Тесты для ядра
-│   └── test_ui_integration.py       # Интеграционные тесты UI
+│   ├── regression_test_data.xlsx    # Данные для тестирования
+│   └── test_regression_core.py      # Тесты для ядра
 ├── .gitignore                       # Шаблон для Python/PyQt
 ├── LICENSE                          # Лицензия
 ├── requirements.txt                 # Зависимости
